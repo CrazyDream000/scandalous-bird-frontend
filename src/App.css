@@ -1,0 +1,65 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+
+
+@font-face {
+  font-family: "Retro Computer";
+  src: url("./style/fonts/retro_computer_personal_use.ttf") format("truetype");
+  font-weight: normal;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retro{
+  font-family: "Retro Computer";
+}
+
+.system-font{
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.nft-caption {
+  height: 40px;
+  text-align: center;
+  text-wrap: nowrap;
+  -webkit-clip-path: polygon(0 100%, 20% 0, 100% 0, 100% 100%);
+  clip-path: polygon(0 100%, 20% 0,100% 0, 100% 100%);
+}
