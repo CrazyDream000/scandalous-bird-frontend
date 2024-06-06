@@ -1,7 +1,7 @@
 import {useState } from "react"
 
 type NFTAuctionCreateModalProps = {
-    executeOfferFunc:(tokenID:number, price: string, duration:number)=>void,
+    executeOfferFunc:(tokenID:number, biddable:boolean, price: string, duration:number)=>void,
     setIsShow:(value: boolean)=>void,
     tokenID:number
 }
@@ -38,7 +38,10 @@ const NFTAuctionCreateModal: React.FC<NFTAuctionCreateModalProps> = ({setIsShow,
                     <input className="w-full bg-white p-2 outline-none" onChange={(e)=>{setBidAmount(e.target.value)}}></input>
                     <div className="absolute right-2 top-6 text-gray-500 z-10">LAVA</div>
                 </div>
-                <button className="bg-orange-600 w-full p-2 text-white hover:bg-orange-400 transition" onClick={()=>{executeOfferFunc(tokenID, bidAmont, Number(second + 60 * minute + 3600 * hour)); setIsShow(false)}}>Create Auction</button>
+                <div className="flex gap-2">
+                <button className="bg-orange-600 w-full p-2 text-white hover:bg-orange-400 transition" onClick={()=>{executeOfferFunc(tokenID, true, bidAmont, Number(second + 60 * minute + 3600 * hour)); setIsShow(false)}}>Create Auction</button>
+                <button className="bg-orange-600 w-full p-2 text-white hover:bg-orange-400 transition" onClick={()=>{executeOfferFunc(tokenID, false, bidAmont, Number(second + 60 * minute + 3600 * hour)); setIsShow(false)}}>Create NFT Sale</button>
+                </div>
             </div>
         </div>
     </div>

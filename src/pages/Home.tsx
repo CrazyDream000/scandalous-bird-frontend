@@ -4,6 +4,8 @@ import { nftLists } from "../utils/constants";
 import { useGlobalContext } from "../context/globalContext";
 import { formatEther } from "ethers";
 import { useAccount } from "wagmi";
+
+
 const Home = () => {
   const {address} = useAccount();
   const [NFTListContent, setNFTListContent] = useState();

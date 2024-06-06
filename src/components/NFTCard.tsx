@@ -9,7 +9,14 @@ import { formatEther } from "ethers";
 import { formatTime } from "../utils/format";
 
 const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
-  const { NFTAuctionsInfos, createAuction, offerAuction, placeBidAuction, claimAuction } = useGlobalContext();
+  const {
+    NFTAuctionsInfos,
+    createAuction,
+    offerAuction,
+    placeBidAuction,
+    claimAuction,
+    buyAuctionedNFT,
+  } = useGlobalContext();
   const [showNFTAuctioninfo, setShowNFTAuctioninfo] =
     useState<NFTAuctionInfoProps>();
   //const [inputAuctionPrice, setInputAuctionPrice] = useState<number>(0.0);
@@ -21,8 +28,9 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
   // const [update, setUpdate] = useState<boolean>(false);
   // const [duration, setDuration] = useState<number>(0);
   useEffect(() => {
-    if (!NFTAuctionsInfos || tokenID === -1 || NFTAuctionsInfos.length===0) return;
-    if(!NFTAuctionsInfos[tokenID - 1]) return;
+    if (!NFTAuctionsInfos || tokenID === -1 || NFTAuctionsInfos.length === 0)
+      return;
+    if (!NFTAuctionsInfos[tokenID - 1]) return;
     setShowNFTAuctioninfo(NFTAuctionsInfos[tokenID - 1] as any);
     setDuration(
       Math.trunc(
@@ -47,7 +55,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
   }, [duration]);
 
   const onCreateAuction = async () => {
-    console.log("-----------creating auction----------")
+    console.log("-----------creating auction----------");
     try {
       // Set the "isCreateTX" flag to true to indicate that the auction creation process has started
       setIsCreateTX(true);
@@ -80,10 +88,11 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
 
   const onOfferAuction = async (
     tokenID: number,
+    biddable: boolean,
     price: string,
     duration: number
   ) => {
-    console.log("-----------offering auction----------")
+    console.log("-----------offering auction----------");
     try {
       // Set the "isCreateTX" flag to true to indicate that the auction creation process has started
       setIsCreateTX(true);
@@ -92,7 +101,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
       // Create the auction
       if (offerAuction) {
         // Call the "createAuction" function to create the new auction
-        const success = await offerAuction(tokenID, price, duration);
+        const success = await offerAuction(tokenID, biddable, price, duration);
         // If the auction creation was successful, close the create modal
         if (success) setIsCreateTX(false);
       }
@@ -106,9 +115,8 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
     }
   };
 
-  const onPlaceBidAuction = async (
-  ) => {
-    console.log("-----------placing bid auction----------")
+  const onPlaceBidAuction = async () => {
+    console.log("-----------placing bid auction----------");
     try {
       // Set the "isCreateTX" flag to true to indicate that the auction creation process has started
       setIsCreateTX(true);
@@ -131,30 +139,53 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
     }
   };
 
-  const onClaimAuction = async (
-    ) => {
-      console.log("-----------claiming auction----------")
-      try {
-        // Set the "isCreateTX" flag to true to indicate that the auction creation process has started
-        setIsCreateTX(true);
-        // Check if the NFT has already been created
-        // Retrieve the necessary information about the NFT
-        // Create the auction
-        if (claimAuction) {
-          // Call the "createAuction" function to create the new auction
-          const success = await claimAuction(tokenID);
-          // If the auction creation was successful, close the create modal
-          if (success) setIsCreateTX(false);
-        }
-      } catch (error) {
-        // Log any errors that occurred during the auction creation process
-        console.error(error);
-      } finally {
-        // Set the "isCreateTX" flag to false to indicate that the auction creation process has completed
-        setIsCreateTX(false);
-        setIsCreateModal(false);
+  const onClaimAuction = async () => {
+    console.log("-----------claiming auction----------");
+    try {
+      // Set the "isCreateTX" flag to true to indicate that the auction creation process has started
+      setIsCreateTX(true);
+      // Check if the NFT has already been created
+      // Retrieve the necessary information about the NFT
+      // Create the auction
+      if (claimAuction) {
+        // Call the "createAuction" function to create the new auction
+        const success = await claimAuction(tokenID);
+        // If the auction creation was successful, close the create modal
+        if (success) setIsCreateTX(false);
       }
-    };
+    } catch (error) {
+      // Log any errors that occurred during the auction creation process
+      console.error(error);
+    } finally {
+      // Set the "isCreateTX" flag to false to indicate that the auction creation process has completed
+      setIsCreateTX(false);
+      setIsCreateModal(false);
+    }
+  };
+
+  const onBuyAuctionedNFT = async () => {
+    console.log("-----------onBuyAuctionedNFT auction----------");
+    try {
+      // Set the "isCreateTX" flag to true to indicate that the auction creation process has started
+      setIsCreateTX(true);
+      // Check if the NFT has already been created
+      // Retrieve the necessary information about the NFT
+      // Create the auction
+      if (buyAuctionedNFT && showNFTAuctioninfo) {
+        // Call the "createAuction" function to create the new auction
+        const success = await buyAuctionedNFT(tokenID, Number(formatEther(showNFTAuctioninfo.price)).toString());
+        // If the auction creation was successful, close the create modal
+        if (success) setIsCreateTX(false);
+      }
+    } catch (error) {
+      // Log any errors that occurred during the auction creation process
+      console.error(error);
+    } finally {
+      // Set the "isCreateTX" flag to false to indicate that the auction creation process has completed
+      setIsCreateTX(false);
+      setIsCreateModal(false);
+    }
+  };
 
   return (
     <div className="relative col-span-12 md:col-span-6 lg:col-span-4 2xl:col-span-3 h-full">
@@ -180,7 +211,8 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
             </div>
           </div>
           {tokenID > 0 ? (
-            <img alt="Auction" 
+            <img
+              alt="Auction"
               className="w-12 h-10 absolute top-4 right-4"
               src="./images/Auction-Stamp.png"
             ></img>
@@ -188,15 +220,37 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
             <></>
           )}
         </div>
-        {tokenID < 0 || !isLive || duration < 0 ? (
-          <div className="relative bg-white w-full flex flex-auto z-10 px-5 py-10 justify-center items-center">
+        {tokenID < 0 ||
+        !isLive ||
+        duration < 0 ||
+        !showNFTAuctioninfo?.biddable ? (
+          <div className="relative bg-white w-full flex flex-col gap-2 flex-auto z-10 px-5 py-10 justify-center items-center">
+            
+            {!showNFTAuctioninfo?.biddable && tokenID >= 0 && isLive ? (
+                <div className="flex text-xl flex-row justify-between items-center w-full">
+              <div className="text-gray-500 text-sm">Current</div>
+
+              <span className="text-gray-500 retro text-base flex gap-1">
+                <div>
+                  {showNFTAuctioninfo !== undefined
+                    ? Number(formatEther(showNFTAuctioninfo.price)).toString()
+                    : 0}
+                </div>
+                LAVA
+              </span>
+            </div>
+            ) : (
+              <></>
+            )}
             <button
               className="bg-blue-500 2xl:text-base text-white text-sm p-2 text-nowrap w-full z-10 relative flex justify-center h-10"
               onClick={() => {
                 tokenID < 0
                   ? onCreateAuction()
-                  : duration < 0 && isLive
-                  ? onClaimAuction()
+                  :  isLive
+                  ? duration < 0 && !showNFTAuctioninfo?.biddable
+                    ? onClaimAuction()
+                    : onBuyAuctionedNFT()
                   : setIsCreateModal(true);
               }}
             >
@@ -214,9 +268,11 @@ const NFTCard: React.FC<NFTCardProps> = ({ isLive, tokenID, id }) => {
                 `${
                   tokenID < 0
                     ? "Mint Token"
-                    : duration < 0 && !isLive
-                    ? "Auction Create "
-                    : "Claim NFT"
+                    :  isLive
+                    ? duration < 0 && !showNFTAuctioninfo?.biddable
+                      ? "Claim NFT "
+                      : "Buy NFT"
+                    : "Auction Create"
                 }`
               )}
             </button>

@@ -10,28 +10,25 @@ const AUCTION_ADDR = "0xb3220684E5e6857068a0b7189Dc846560e9eeAa7";
 
 type Props = {
   NFTAuctionsInfos?: Array<NFTAuctionInfoProps>;
-  getNFTAuctionsInfos?: (sortMode:string) => Promise<void>;
+  getNFTAuctionsInfos?: (sortMode: string) => Promise<void>;
   createAuction?: (
     name: string,
     description: string,
     image: string,
     tokenURI: string,
-    id: number,
+    id: number
   ) => Promise<boolean>;
   offerAuction?: (
     tokenID: number,
+    biddable: boolean,
     price: string,
     duration: number
-  ) => Promise<boolean>
-  placeBidAuction?: (
-    tokenID:number,
-    price:string
-  ) => Promise<boolean>
-  claimAuction?: (
-    tokenID:number,
-  ) => Promise<boolean>
-  sortMode?:string,
-  setSortMode?: (sortMode:string) => void
+  ) => Promise<boolean>;
+  placeBidAuction?: (tokenID: number, price: string) => Promise<boolean>;
+  claimAuction?: (tokenID: number) => Promise<boolean>;
+  buyAuctionedNFT?: (tokenID: number, price: string) => Promise<boolean>;
+  sortMode?: string;
+  setSortMode?: (sortMode: string) => void;
 };
 
 const globalContext = createContext<Props>({});
@@ -53,10 +50,10 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getNFTAuctionsInfos = async (sortMode:string) => {
+  const getNFTAuctionsInfos = async (sortMode: string) => {
     if (!publicClient) return;
     let AuctionsLists = [];
-    console.log("---------sort mode-----------", sortMode)
+    console.log("---------sort mode-----------", sortMode);
     if (sortMode === "all") {
       AuctionsLists = (await publicClient.readContract({
         abi: NFTAuctionContract_ABI,
@@ -88,17 +85,17 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
         functionName: "getMyAuctions",
       })) as Array<NFTAuctionInfoProps>;
     }
-    if(AuctionsLists)
-     {
+    if (AuctionsLists) {
       setNFTAuctionInfos(AuctionsLists);
       console.log(AuctionsLists);
-     } 
+    }
   };
 
   const offerAuction = async (
     tokenID: number,
+    biddable: boolean,
     price: string,
-    duration: number,
+    duration: number
   ) => {
     let isTxConfirmed = false;
 
@@ -109,7 +106,7 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
       functionName: "offerAuction",
       args: [
         tokenID,
-        true,
+        biddable,
         duration % 60,
         Math.trunc((duration % 3600) / 60),
         Math.trunc(duration / 3600),
@@ -158,9 +155,7 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     return isTxConfirmed;
   };
 
-  const placeBidAuction = async (
-    tokenID : number, price:string
-  ) => {
+  const placeBidAuction = async (tokenID: number, price: string) => {
     let isTxConfirmed = false;
 
     if (!walletClient || !publicClient) return false;
@@ -180,9 +175,7 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     return isTxConfirmed;
   };
 
-  const claimAuction = async (
-    tokenID : number
-  ) => {
+  const claimAuction = async (tokenID: number) => {
     let isTxConfirmed = false;
 
     if (!walletClient || !publicClient) return false;
@@ -201,6 +194,27 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     return isTxConfirmed;
   };
 
+  const buyAuctionedNFT = async (tokenID: number, price: string) => {
+    console.log(parseEther(Number(price).toString()));
+    let isTxConfirmed = false;
+    
+    if (!walletClient || !publicClient) return false;
+    const success = await walletClient?.writeContract({
+      abi: NFTAuctionContract_ABI,
+      address: AUCTION_ADDR as `0x${string}`,
+      functionName: "buyAuctionedItem",
+      args: [tokenID],
+      value: parseEther(Number(price).toString()),
+    });
+    await publicClient?.waitForTransactionReceipt({ hash: success! });
+
+    isTxConfirmed = true;
+    console.log("-------getting NFT Auction----------");
+    await getNFTAuctionsInfos(sortMode);
+    console.log("-------update NFT AuctionInfo-------");
+    return isTxConfirmed;
+  };
+
   const value = {
     NFTAuctionsInfos,
     sortMode,
@@ -209,7 +223,8 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
     createAuction,
     offerAuction,
     placeBidAuction,
-    claimAuction
+    claimAuction,
+    buyAuctionedNFT,
   };
   return (
     <globalContext.Provider value={value}>{children}</globalContext.Provider>
